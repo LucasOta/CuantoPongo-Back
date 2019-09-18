@@ -39,6 +39,19 @@ io.on('connection', function (socket) {
             return element.id == pData.roomNo;
         }
     });
+    socket.on('modSimpleParticipant', function (pData) {
+        var aux = simpRooms.findIndex(existeRoom);
+        if (aux != -1) {
+            simpRooms[aux].modParticipant(pData.id, pData.alias, pData.paid);
+            io.emit('updatedSimpleRoom', simpRooms[aux]);
+        }
+        else {
+            // Mandar mensaje o algo diciendo que la room no existe
+        }
+        function existeRoom(element) {
+            return element.id == pData.roomNo;
+        }
+    });
     socket.on('delSimpleParticipant', function (pData) {
         var aux = simpRooms.findIndex(existeRoom);
         if (aux != -1) {

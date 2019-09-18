@@ -17,6 +17,18 @@ var SimpleModeRoom = /** @class */ (function () {
         this.updateTotal();
         this.updateParticipants();
     };
+    SimpleModeRoom.prototype.modParticipant = function (id, alias, paid) {
+        var aux = this.participants.findIndex(existeId);
+        function existeId(element) {
+            return element.id == id;
+        }
+        if (aux != -1) {
+            this.participants[aux].alias = alias;
+            this.participants[aux].paid = paid;
+        }
+        this.updateTotal();
+        this.updateParticipants();
+    };
     SimpleModeRoom.prototype.delParticipant = function (id) {
         this.participants = this.participants.filter(function (value, index, arr) {
             return value.id != id;

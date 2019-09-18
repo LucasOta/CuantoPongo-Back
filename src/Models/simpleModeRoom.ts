@@ -24,6 +24,21 @@ export default class SimpleModeRoom {
     this.updateParticipants();
   }
 
+  public modParticipant(id: number, alias: string, paid: number) {
+    let aux = this.participants.findIndex(existeId);
+    function existeId(element: any) {
+      return element.id == id;
+    }
+
+    if (aux != -1) {
+      this.participants[aux].alias = alias;
+      this.participants[aux].paid = paid;
+    }
+
+    this.updateTotal();
+    this.updateParticipants();
+  }
+
   public delParticipant(id: number) {
     this.participants = this.participants.filter(function(value, index, arr) {
       return value.id != id;
