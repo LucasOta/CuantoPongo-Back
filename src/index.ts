@@ -10,7 +10,9 @@ import path = require('path');
 //Para lógica
 import simpleModeRoom = require('./Models/simpleModeRoom');
 
-const expressServer = Server.init(3000);
+let PORT = process.env.PORT || 3000
+
+const expressServer = Server.init(PORT);
 const server = http.createServer(expressServer.app);
 const io = socketIO.listen(server);
 

@@ -10,7 +10,8 @@ var http = require("http");
 var socketIO = require("socket.io");
 //Para lógica
 var simpleModeRoom = require("./Models/simpleModeRoom");
-var expressServer = server_1.default.init(3000);
+var PORT = process.env.PORT || 3000;
+var expressServer = server_1.default.init(PORT);
 var server = http.createServer(expressServer.app);
 var io = socketIO.listen(server);
 expressServer.app.use(router_1.default);
