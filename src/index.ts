@@ -102,7 +102,7 @@ function createNewSimpleModeRoom() {
   }
 }
 
-server.listen(3000);
+server.listen(PORT);
 
 // -----------------------DEBUG
 // node --inspect dist/index.js
