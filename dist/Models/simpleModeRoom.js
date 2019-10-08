@@ -7,10 +7,22 @@ var simpleParticipant_1 = __importDefault(require("./simpleParticipant"));
 var SimpleModeRoom = /** @class */ (function () {
     function SimpleModeRoom(id) {
         this.auxParticipantId = 0;
+        this.name = '';
         this.id = id;
         this.total = 0;
         this.participants = [];
     }
+    SimpleModeRoom.prototype.setName = function (pName) {
+        this.name = pName;
+    };
+    SimpleModeRoom.prototype.updateTotal = function () {
+        var aux = 0;
+        this.participants.forEach(function (part) {
+            aux += part.paid;
+        });
+        this.total = aux;
+    };
+    // Participants
     SimpleModeRoom.prototype.addParticipant = function (alias, paid) {
         var participant = new simpleParticipant_1.default(this.auxParticipantId++, alias, paid);
         this.participants.push(participant);
@@ -35,13 +47,6 @@ var SimpleModeRoom = /** @class */ (function () {
         });
         this.updateTotal();
         this.updateParticipants();
-    };
-    SimpleModeRoom.prototype.updateTotal = function () {
-        var aux = 0;
-        this.participants.forEach(function (part) {
-            aux += part.paid;
-        });
-        this.total = aux;
     };
     SimpleModeRoom.prototype.updateParticipants = function () {
         var ammountPerParticipant = this.total / this.participants.length;

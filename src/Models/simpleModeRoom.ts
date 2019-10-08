@@ -3,6 +3,7 @@ import SimpleParticipant from './simpleParticipant';
 export default class SimpleModeRoom {
   auxParticipantId: number = 0;
   id: number;
+  name: string = '';
   total: number;
   participants: SimpleParticipant[];
 
@@ -11,6 +12,21 @@ export default class SimpleModeRoom {
     this.total = 0;
     this.participants = [];
   }
+
+  public setName(pName: string) {
+    this.name = pName;
+  }
+
+  private updateTotal() {
+    let aux = 0;
+    this.participants.forEach(function(part) {
+      aux += part.paid;
+    });
+
+    this.total = aux;
+  }
+
+  // Participants
 
   public addParticipant(alias: string, paid: number) {
     let participant = new SimpleParticipant(
@@ -46,15 +62,6 @@ export default class SimpleModeRoom {
 
     this.updateTotal();
     this.updateParticipants();
-  }
-
-  private updateTotal() {
-    let aux = 0;
-    this.participants.forEach(function(part) {
-      aux += part.paid;
-    });
-
-    this.total = aux;
   }
 
   private updateParticipants() {
