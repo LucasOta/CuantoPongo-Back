@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var server_1 = __importDefault(require("./server/server"));
 var router_1 = __importDefault(require("./router/router"));
+var spawn = require('child_process').spawn;
 //Para usar en Socket.io
 var http = require("http");
 var socketIO = require("socket.io");
@@ -15,6 +16,15 @@ var expressServer = server_1.default.init(parseInt(PORT));
 var server = http.createServer(expressServer.app);
 var io = socketIO.listen(server);
 expressServer.app.use(router_1.default);
+// Subproceso
+var child = spawn(process.execPath, [__dirname + '/stackCleaner.js', 'child'], {
+    stdio: [null, null, null, 'pipe']
+});
+child.stdio[3].on('data', function (pData) {
+    if (pData.toString() === 'imprimi') {
+        console.log('Bueno, escuché el evento del child');
+    }
+});
 // Ida y vuelta entre Server y Front a través de eventos de Socket.io
 io.on('connection', function (socket) {
     console.log('New socket connected');

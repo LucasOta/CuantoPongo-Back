@@ -1,6 +1,8 @@
 import Server from './server/server';
 import router from './router/router';
 
+let spawn = require('child_process').spawn;
+
 //Para usar en Socket.io
 import http = require('http');
 import socketIO = require('socket.io');
@@ -17,6 +19,16 @@ const server = http.createServer(expressServer.app);
 const io = socketIO.listen(server);
 
 expressServer.app.use(router);
+
+// Subproceso
+let child = spawn(process.execPath, [__dirname + '/stackCleaner.js', 'child'], {
+  stdio: [null, null, null, 'pipe']
+});
+child.stdio[3].on('data', (pData: { toString: () => string }) => {
+  if (pData.toString() === 'imprimi') {
+    console.log('Bueno, escuché el evento del child');
+  }
+});
 
 // Ida y vuelta entre Server y Front a través de eventos de Socket.io
 io.on('connection', (socket: SocketIO.Socket) => {
