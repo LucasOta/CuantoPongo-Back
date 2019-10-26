@@ -20,15 +20,15 @@ const io = socketIO.listen(server);
 
 expressServer.app.use(router);
 
-// Subproceso
-let child = spawn(process.execPath, [__dirname + '/stackCleaner.js', 'child'], {
-  stdio: [null, null, null, 'pipe']
-});
-child.stdio[3].on('data', (pData: { toString: () => string }) => {
-  if (pData.toString() === 'imprimi') {
-    console.log('Bueno, escuché el evento del child');
-  }
-});
+// // Subproceso
+// let child = spawn(process.execPath, [__dirname + '/stackCleaner.js', 'child'], {
+//   stdio: [null, null, null, 'pipe']
+// });
+// child.stdio[3].on('data', (pData: { toString: () => string }) => {
+//   if (pData.toString() === 'imprimi') {
+//     console.log('Bueno, escuché el evento del child');
+//   }
+// });
 
 // Ida y vuelta entre Server y Front a través de eventos de Socket.io
 io.on('connection', (socket: SocketIO.Socket) => {
@@ -40,8 +40,9 @@ io.on('connection', (socket: SocketIO.Socket) => {
 
   //Creo un ID que no exista en ese momento y lo mando al cliente
   socket.on('newSimpleRoom', pData => {
-    let aux = createNewSimpleModeRoom();
-    io.to(pData.socketID).emit('numNewSimpleRoom', aux);
+    // let aux = createNewSimpleModeRoom();
+    simpRooms.push(new simpleModeRoom.default('sr_' + pData.socketID));
+    io.to(pData.socketID).emit('numNewSimpleRoom', 'sr_' + pData.socketID);
   });
 
   socket.on('setSimpleRoomName', pData => {
@@ -68,6 +69,14 @@ io.on('connection', (socket: SocketIO.Socket) => {
     function existeRoom(element: any) {
       return element.id == pRoomID;
     }
+  });
+
+  // ADMIN
+  socket.on('refreshAdmin', socketID => {
+    // clearSimpRoomsArr();
+
+    let aux = adminData();
+    io.to(socketID).emit('refreshedAdmin', aux);
   });
 
   // PARTICIPANTS - SIMPLE ROOM
@@ -118,30 +127,8 @@ io.on('connection', (socket: SocketIO.Socket) => {
 
 // Lógica de la app
 let simpRooms: simpleModeRoom.default[] = [];
-function createNewSimpleModeRoom() {
-  console.log('Creando nueva room');
-  let aux: number;
-  let exist = false;
 
-  if (simpRooms.length > 0) {
-    do {
-      aux = Math.floor(Math.random() * 100) + 1;
-
-      simpRooms.some(function(simpRoom) {
-        if (simpRoom.id == aux) exist = true;
-        return simpRoom.id === aux;
-      });
-    } while (exist);
-    simpRooms.push(new simpleModeRoom.default(aux));
-    return aux;
-  } else {
-    aux = Math.floor(Math.random() * 100) + 1;
-    simpRooms.push(new simpleModeRoom.default(aux));
-    return aux;
-  }
-}
-
-function setSimpleRoomName(proomID: number, pName: string) {
+function setSimpleRoomName(proomID: string, pName: string) {
   let aux = simpRooms.findIndex(existeRoom);
   if (aux != -1) {
     simpRooms[aux].setName(pName);
@@ -155,28 +142,59 @@ function setSimpleRoomName(proomID: number, pName: string) {
   }
 }
 
+function adminData() {
+  let rc = simpRooms.length;
+  let sr = io.nsps['/'].adapter.rooms;
+  let sr_count = 0;
+  let sc_count = 0;
+  for (let k of Object.keys(sr)) {
+    if (k.includes('sr_')) {
+      sr_count++;
+      sc_count += sr[k].length;
+    }
+  }
+  let data = {
+    sockets_connected: sc_count,
+    rooms_created: rc,
+    sockets_rooms: sr_count
+  };
+  return data;
+}
+
 //No está testeado
 function clearSimpRoomsArr() {
   var roomToDelete: string[] = [];
-  simpRooms.forEach(room => {
-    try {
-      io.of('/')
-        .in(room.name)
-        .clients(function(error: any, clients: any) {
-          if (clients.length == 0) {
-            roomToDelete.push(room.name);
-          }
-        });
-    } catch (error) {
-      roomToDelete.push(room.name);
-    }
-  });
-
-  for (let i = 0; i < roomToDelete.length; i++) {
-    simpRooms = simpRooms.filter(function(value, index, arr) {
-      return value.name != roomToDelete[i];
+  var simpRooms2 = simpRooms;
+  io.of('/')
+    .in(simpRooms2[0].name)
+    .clients(function(error: any, clients: any) {
+      console.log('hola');
     });
-  }
+  // simpRooms.forEach(room => {
+  //   try {
+  //     io.of('/')
+  //       .in(room.name)
+  //       .clients(function(error: any, clients: any) {
+  //         if (clients.length == 0) {
+  //           roomToDelete.push(room.name);
+  //         }
+  //       });
+  //   } catch (error) {
+  //     roomToDelete.push(room.name);
+  //   }
+  // });
+
+  // for (let i = 0; i < roomToDelete.length; i++) {
+  //   simpRooms = simpRooms.filter(function(value, index, arr) {
+  //     return value.name != roomToDelete[i];
+  //   });
+  // }
+}
+
+// list the sockets in one of those rooms
+function getSocketsInRoom(pRoom: any, pNamespace = '/') {
+  let room = io.nsps[pNamespace].adapter.rooms[pRoom];
+  return room.sockets;
 }
 
 server.listen(PORT);

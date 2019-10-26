@@ -2,12 +2,12 @@ import SimpleParticipant from './simpleParticipant';
 
 export default class SimpleModeRoom {
   auxParticipantId: number = 0;
-  id: number;
+  id: string;
   name: string = '';
   total: number;
   participants: SimpleParticipant[];
 
-  constructor(id: number) {
+  constructor(id: string) {
     this.id = id;
     this.total = 0;
     this.participants = [];
