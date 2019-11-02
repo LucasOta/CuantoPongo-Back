@@ -66,6 +66,9 @@ io.on('connection', function (socket) {
         var aux = adminData();
         io.to(socketID).emit('refreshedAdmin', aux);
     });
+    socket.on('clearSimpRooms', function (socketID) {
+        clearSimpRoomsArr();
+    });
     // PARTICIPANTS - SIMPLE ROOM
     socket.on('newSimpleParticipant', function (pData) {
         //Esto es sólo para probar
@@ -145,31 +148,30 @@ function adminData() {
 }
 //No está testeado
 function clearSimpRoomsArr() {
-    var roomToDelete = [];
-    var simpRooms2 = simpRooms;
-    io.of('/')
-        .in(simpRooms2[0].name)
-        .clients(function (error, clients) {
-        console.log('hola');
+    var roomsToDelete = [];
+    var sr = io.nsps['/'].adapter.rooms;
+    for (var _i = 0, simpRooms_1 = simpRooms; _i < simpRooms_1.length; _i++) {
+        var r = simpRooms_1[_i];
+        try {
+            if (!sr[r.id]) {
+                roomsToDelete.push(r.id);
+            }
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+    // let auxSimpRooms = [];
+    roomsToDelete.forEach(function (rtd) {
+        simpRooms.forEach(function (sr) {
+            if (sr.id == rtd) {
+                var index = simpRooms.indexOf(sr);
+                if (index > -1) {
+                    simpRooms.splice(index, 1);
+                }
+            }
+        });
     });
-    // simpRooms.forEach(room => {
-    //   try {
-    //     io.of('/')
-    //       .in(room.name)
-    //       .clients(function(error: any, clients: any) {
-    //         if (clients.length == 0) {
-    //           roomToDelete.push(room.name);
-    //         }
-    //       });
-    //   } catch (error) {
-    //     roomToDelete.push(room.name);
-    //   }
-    // });
-    // for (let i = 0; i < roomToDelete.length; i++) {
-    //   simpRooms = simpRooms.filter(function(value, index, arr) {
-    //     return value.name != roomToDelete[i];
-    //   });
-    // }
 }
 // list the sockets in one of those rooms
 function getSocketsInRoom(pRoom, pNamespace) {

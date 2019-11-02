@@ -78,6 +78,9 @@ io.on('connection', (socket: SocketIO.Socket) => {
     let aux = adminData();
     io.to(socketID).emit('refreshedAdmin', aux);
   });
+  socket.on('clearSimpRooms', socketID => {
+    clearSimpRoomsArr();
+  });
 
   // PARTICIPANTS - SIMPLE ROOM
   socket.on('newSimpleParticipant', pData => {
@@ -163,32 +166,31 @@ function adminData() {
 
 //No está testeado
 function clearSimpRoomsArr() {
-  var roomToDelete: string[] = [];
-  var simpRooms2 = simpRooms;
-  io.of('/')
-    .in(simpRooms2[0].name)
-    .clients(function(error: any, clients: any) {
-      console.log('hola');
-    });
-  // simpRooms.forEach(room => {
-  //   try {
-  //     io.of('/')
-  //       .in(room.name)
-  //       .clients(function(error: any, clients: any) {
-  //         if (clients.length == 0) {
-  //           roomToDelete.push(room.name);
-  //         }
-  //       });
-  //   } catch (error) {
-  //     roomToDelete.push(room.name);
-  //   }
-  // });
+  var roomsToDelete: string[] = [];
+  let sr = io.nsps['/'].adapter.rooms;
 
-  // for (let i = 0; i < roomToDelete.length; i++) {
-  //   simpRooms = simpRooms.filter(function(value, index, arr) {
-  //     return value.name != roomToDelete[i];
-  //   });
-  // }
+  for (let r of simpRooms) {
+    try {
+      if (!sr[r.id]) {
+        roomsToDelete.push(r.id);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  // let auxSimpRooms = [];
+
+  roomsToDelete.forEach(rtd => {
+    simpRooms.forEach(sr => {
+      if (sr.id == rtd) {
+        var index = simpRooms.indexOf(sr);
+        if (index > -1) {
+          simpRooms.splice(index, 1);
+       }
+      }
+    });
+  });
 }
 
 // list the sockets in one of those rooms
